@@ -1,0 +1,7 @@
+sqlite3
+.open test.db
+drop table research;
+create table research (name varchar(255), type varchar(255), year int, link varchar(255));
+.mode csv research
+.import research3.csv research
+.exit Exit

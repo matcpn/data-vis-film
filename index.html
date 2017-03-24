@@ -1,0 +1,233 @@
+<html>
+	<head>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+		<script src="https://d3js.org/d3.v4.min.js"></script>
+		<script src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
+		<style>
+	    #chart {                                                          
+	      height: 360px;                                                  
+	      position: relative;                                             
+	      width: 360px;                                                   
+	    }                                                                 
+	    .tooltip {                                                        
+	      background: #eee;                                               
+	      box-shadow: 0 0 5px #999999;                                    
+	      color: #333;                                                    
+	      display: none;                                                  
+	      font-size: 12px;                                                
+	      left: 130px;                                                    
+	      padding: 10px;                                                  
+	      position: absolute;                                             
+	      text-align: center;                                             
+	      top: 95px;                                                      
+	      width: 80px;                                                    
+	      z-index: 10;                                                    
+	    }                                                                 
+
+	    .bar {
+		  fill: steelblue;
+		}
+
+		.bar:hover {
+		  fill: brown;
+		}
+
+		.axis--x path {
+		  display: none;
+		}
+
+		.infocolumn {
+			width:165px;
+			visibility:hidden;
+		}
+	    </style>
+		<script type="text/javascript">
+			$(document).ready(function() {
+				var dataset = resetDataset();
+				$("#slider-range").slider({
+					range: true,
+					min: 1950,
+					max: 2018,
+					values: [ 1950, 2018 ],
+					slide: function( event, ui ) {
+						$( "#amount" ).html( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
+							$( "#amount1" ).val(ui.values[ 0 ]);
+							$( "#amount2" ).val(ui.values[ 1 ]);
+					},
+					stop: function( event, ui ) {
+						dataset = resetDataset();
+						$.get("/db/" + ui.values[ 0 ] + "/" + ui.values[ 1 ], function( data ) {
+							for (var i = 0; i <= 10; i++) {
+								$( "#column" + i ).empty();
+								$( ".infoColumn" ).css('visibility', 'visible');
+							}
+							$(data).each(function(index) {
+								//console.log(data[index].type);
+								var dataIndex;
+								datasetIndices.forEach( function( val, i ) {
+									var type = new RegExp(data[index].type, "i");
+									if(val.match(type)) {
+										dataIndex = i;
+										//console.log(dataIndex);
+									}
+								});
+								//console.log(dataIndex);
+								dataset[dataIndex].count += 1;
+								var columnNum = '#column' + dataIndex;
+								$( columnNum ).append( "<p><a href=" + data[index].link + " target=\"_blank\">" + data[index].name + "</a></p>" );
+							});
+							pie(dataset);
+							bar(dataset);
+							//console.log(dataset);
+						});
+					}
+				});
+				$( "#amount" ).html( $( "#slider-range" ).slider( "values", 0 ) +
+     				" - " + $( "#slider-range" ).slider( "values", 1 ) );
+				/*$.get("/db/1950/2018", function( data ) {
+					$(data).each(function(index) {
+						$( ".result" ).append( "<p><a href=" + data[index].link + ">" + data[index].name + "</a></p>" );
+					});
+				});*/
+			});
+
+			function resetDataset() {
+				dataset = [ { label: 'Time Travel', count: 0 },
+				{ label: 'Aliens', count: 0 },
+				{ label: 'Climate/Natural Disaster/Global Warming', count: 0 },
+				{ label: 'Robot/AI', count: 0 },
+				{ label: 'War/Atomic Bomb', count: 0 },
+				{ label: 'Zombies', count: 0 },
+				{ label: 'Disease', count: 0 },
+				{ label: 'Monster', count: 0 },
+				{ label: 'Religious/Rapture', count: 0 },
+				{ label: 'Infertility/Overpopulation', count: 0 },
+				{ label: 'Asteroid', count: 0 }];
+				return dataset;
+			}
+			var datasetIndices = ['Time Travel', 
+			'Aliens',
+			'Climate changes/Natural Disaster/Global Warming/solar flare',
+			'Robots/AI',
+			'Wars/Atomic Bomb',
+			'Zombies',
+			'Disease',
+			'Monster',
+			'Religious related/Rapture',
+			'Infertility/Overpopulation',
+			'Asteroid']
+
+			function pie(dataset) {
+	     		var chart = new CanvasJS.Chart("pie",
+				{
+					title:{
+						text: "Apocalypticism in Films"
+					},
+
+					data: [
+					{
+						type: "pie",
+
+						dataPoints: [
+						{ x: 10, y: dataset[0].count, label:dataset[0].label },
+						{ x: 20, y: dataset[1].count, label:dataset[1].label },
+						{ x: 30, y: dataset[2].count, label:dataset[2].label },
+						{ x: 40, y: dataset[3].count, label:dataset[3].label },
+						{ x: 50, y: dataset[4].count, label:dataset[4].label },
+						{ x: 60, y: dataset[5].count, label:dataset[5].label },
+						{ x: 70, y: dataset[6].count, label:dataset[6].label },
+						{ x: 80, y: dataset[7].count, label:dataset[7].label },
+						{ x: 90, y: dataset[8].count, label:dataset[8].label },
+						{ x: 100, y: dataset[9].count, label:dataset[9].label },
+						{ x: 110, y: dataset[10].count, label:dataset[10].label }
+						]
+					}
+					]
+				});
+
+				chart.render();                                                 
+	     	}
+
+	     	function bar(dataset) {
+	     		var chart = new CanvasJS.Chart("bar",
+				{
+					title:{
+						text: "Apocalypticism in Films"
+					},
+
+					data: [
+					{
+						type: "bar",
+
+						dataPoints: [
+						{ x: 10, y: dataset[0].count, label:dataset[0].label },
+						{ x: 20, y: dataset[1].count, label:dataset[1].label },
+						{ x: 30, y: dataset[2].count, label:dataset[2].label },
+						{ x: 40, y: dataset[3].count, label:dataset[3].label },
+						{ x: 50, y: dataset[4].count, label:dataset[4].label },
+						{ x: 60, y: dataset[5].count, label:dataset[5].label },
+						{ x: 70, y: dataset[6].count, label:dataset[6].label },
+						{ x: 80, y: dataset[7].count, label:dataset[7].label },
+						{ x: 90, y: dataset[8].count, label:dataset[8].label },
+						{ x: 100, y: dataset[9].count, label:dataset[9].label },
+						{ x: 110, y: dataset[10].count, label:dataset[10].label }
+						]
+					}
+					]
+				});
+
+				chart.render();
+			}
+		</script>
+	</head>
+	<body>
+	 	<div style="width:100%;text-align:center;margin-top:30px">
+	 		<div>
+    			<p>Year Range:<p id="amount"></p></p>
+  			</div>	
+		<div id="slider-range" style="width:75%; margin:auto"></div>
+		<div style="height:400px;margin:20px">
+			<div id="pie" style="float:left;width:50%;height:400px"></div>
+			<div id="bar" style="float:left;width:50%;height:400px"></div>
+		</div>
+		<div style="font-size:9px">
+			<div class="infoColumn" style="float:left">Time Travel
+				<div id='column0'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Aliens
+				<div id='column1'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Climate/Natural Disaster/Global Warming
+				<div id='column2'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Robots/AI
+				<div id='column3'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Wars/Atomic Bomb
+				<div id='column4'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Zombies
+				<div id='column5'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Disease
+				<div id='column6'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Monster
+				<div id='column7'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Religious/Rapture
+				<div id='column8'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Infertility/Overpopulation
+				<div id='column9'></div>
+			</div>
+			<div class="infoColumn" style="float:left">Asteroid
+				<div id='column10'></div>
+			</div>
+		</div>
+		<div class="result">
+		</div>
+	</body>
+</html>
