@@ -128,9 +128,10 @@
 										//console.log(dataIndex);
 									}
 								});
+								var columnNum = '#column' + dataIndex;
+								$( columnNum ).append( "<p><a href=" + data[index].link + " target=\"_blank\">" + data[index].name + "</a></p>" );
 								//console.log(dataIndex);
 								dataset[dataIndex].count += 1;
-								
 							});
 							pie(dataset);
 							bar(dataset);
