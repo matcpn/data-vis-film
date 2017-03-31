@@ -78,6 +78,7 @@
 								var columnNum = '#column' + dataIndex;
 								$( columnNum ).append( "<p><a href=" + data[index].link + " target=\"_blank\">" + data[index].name + "</a></p>" );
 							});
+							filterData();
 							pie(dataset);
 							bar(dataset);
 							//console.log(dataset);
@@ -91,7 +92,51 @@
 						$( ".result" ).append( "<p><a href=" + data[index].link + ">" + data[index].name + "</a></p>" );
 					});
 				});*/
+				$( "#filter-box" ).change( function() {
+					filterData();
+					//pie(dataset);
+					//bar(dataset);
+				});
 			});
+
+			function filterData() {
+					var selected = $("#filter-box").val();
+					if (selected != "None") {
+					datasetIndices.forEach( function( val, i ) {
+									var type = new RegExp(selected, "i");
+									if(val.match(type)) {
+										dataset[i].count = 0;
+										pie(dataset);
+										bar(dataset);
+									}
+								});
+					} else {
+						dataset = resetDataset();
+						var ui = $( "#slider-range" ).slider( "values" );
+						$.get("/db/" + ui[ 0 ] + "/" + ui[ 1 ], function( data ) {
+							for (var i = 0; i <= 10; i++) {
+								$( "#column" + i ).empty();
+								$( ".infoColumn" ).css('visibility', 'visible');
+							}
+							$(data).each(function(index) {
+								//console.log(data[index].type);
+								var dataIndex;
+								datasetIndices.forEach( function( val, i ) {
+									var type = new RegExp(data[index].type, "i");
+									if(val.match(type)) {
+										dataIndex = i;
+										//console.log(dataIndex);
+									}
+								});
+								//console.log(dataIndex);
+								dataset[dataIndex].count += 1;
+								
+							});
+							pie(dataset);
+							bar(dataset);
+					});
+				}
+			}
 
 			function resetDataset() {
 				dataset = [ { label: 'Time Travel', count: 0 },
@@ -129,7 +174,7 @@
 					data: [
 					{
 						type: "pie",
-
+						toolTipContent: "{label} = #percent%",
 						dataPoints: [
 						{ x: 10, y: dataset[0].count, label:dataset[0].label },
 						{ x: 20, y: dataset[1].count, label:dataset[1].label },
@@ -188,6 +233,23 @@
     			<p>Year Range:<p id="amount"></p></p>
   			</div>	
 		<div id="slider-range" style="width:75%; margin:auto"></div>
+		<div> 
+			<label>Choose a category to filter out: </label>
+			<select id="filter-box">
+				<option value="None">None</option>
+				<option value="Time Travel">Time Travel</option>
+				<option value="Aliens">Aliens</option>
+				<option value="Climate/Natural Disaster/Global Warming">Climate/Natural Disaster/Global Warming</option>
+				<option value="Robots/AI">Robots/AI</option>
+				<option value="Wars/Atomic Bomb">Wars/Atomic Bomb</option>
+				<option value="Zombies">Zombies</option>
+				<option value="Disease">Disease</option>
+				<option value="Monster">Monster</option>
+				<option value="Religious/Rapture">Religious/Rapture</option>
+				<option value="Infertility/Overpopulation">Infertility/Overpopulation</option>
+				<option value="Asteroid">Asteroid</option>
+			</select>
+		</div>
 		<div style="height:400px;margin:20px">
 			<div id="pie" style="float:left;width:50%;height:400px"></div>
 			<div id="bar" style="float:left;width:50%;height:400px"></div>
